@@ -6,7 +6,6 @@ from git import Repo
 from git.exc import GitCommandError, InvalidGitRepositoryError
 
 import config
-
 from ..logging import LOGGER
 
 
@@ -37,11 +36,13 @@ def git():
         UPSTREAM_REPO = f"https://{GIT_USERNAME}:{config.GIT_TOKEN}@{TEMP_REPO}"
     else:
         UPSTREAM_REPO = config.UPSTREAM_REPO
+    
     try:
         repo = Repo()
-        LOGGER(__name__).info(f"Git Client Found [VPS DEPLOYER]")
-    except GitCommandError:
-        LOGGER(__name__).info(f"Invalid Git Command")
+        LOGGER(__name__).info("Git Client Found [VPS DEPLOYER]")
+    except GitCommandError as e:
+        LOGGER(__name__).error(f"Invalid Git Command: {e}")
+        return
     except InvalidGitRepositoryError:
         repo = Repo.init()
         if "origin" in repo.remotes:
@@ -49,23 +50,30 @@ def git():
         else:
             origin = repo.create_remote("origin", UPSTREAM_REPO)
         origin.fetch()
-        repo.create_head(
-            config.UPSTREAM_BRANCH,
-            origin.refs[config.UPSTREAM_BRANCH],
-        )
-        repo.heads[config.UPSTREAM_BRANCH].set_tracking_branch(
-            origin.refs[config.UPSTREAM_BRANCH]
-        )
-        repo.heads[config.UPSTREAM_BRANCH].checkout(True)
+        if config.UPSTREAM_BRANCH in origin.refs:
+            repo.create_head(config.UPSTREAM_BRANCH, origin.refs[config.UPSTREAM_BRANCH])
+            repo.heads[config.UPSTREAM_BRANCH].set_tracking_branch(origin.refs[config.UPSTREAM_BRANCH])
+            repo.heads[config.UPSTREAM_BRANCH].checkout(True)
+        else:
+            LOGGER(__name__).error(f"No branch named '{config.UPSTREAM_BRANCH}' found in the remote repository.")
+            return
         try:
             repo.create_remote("origin", config.UPSTREAM_REPO)
         except BaseException:
             pass
-        nrs = repo.remote("origin")
-        nrs.fetch(config.UPSTREAM_BRANCH)
+        origin.fetch(config.UPSTREAM_BRANCH)
         try:
-            nrs.pull(config.UPSTREAM_BRANCH)
-        except GitCommandError:
+            origin.pull(config.UPSTREAM_BRANCH)
+        except GitCommandError as e:
             repo.git.reset("--hard", "FETCH_HEAD")
-        install_req("pip3 install --no-cache-dir -r requirements.txt")
-        LOGGER(__name__).info(f"Fetching updates from upstream repository...")
+            LOGGER(__name__).error(f"Error during git pull: {e}")
+        
+        stdout, stderr, returncode, pid = install_req("pip3 install --no-cache-dir -r requirements.txt")
+        LOGGER(__name__).info(f"Installation stdout: {stdout}")
+        LOGGER(__name__).info(f"Installation stderr: {stderr}")
+        if returncode == 0:
+            LOGGER(__name__).info(f"Requirements installed successfully, PID: {pid}")
+        else:
+            LOGGER(__name__).error(f"Requirements installation failed, PID: {pid}, Return code: {returncode}")
+        
+        LOGGER(__name__).info("Fetching updates from upstream repository...")
