@@ -1,7 +1,7 @@
 {
-    "name": "ᴀɴᴏɴ ダ ᴍᴜsɪᴄ",
+    "name": "𝑱𝒂𝒑𝒂𝒏𝒆𝒔𝒆 𝑿 𝑴𝒂𝒏𝒂𝒈𝒆𝒎𝒆𝒏𝒕",
     "description": "A Telegram Music Player Bot, written in Python with Pyrogram and Py-Tgcalls.",
-    "logo": "https://te.legra.ph/file/b8a0c1a00db3e57522b53.jpg",
+    "logo": "https://telegra.ph/file/80f57fb168d1d1b167fdf.png",
     "keywords": [
     "python3",
     "telegram",
@@ -38,7 +38,7 @@
         "required": true
       },
       "STRING_SESSION": {
-        "description": "A Pyrogram v2 String Session from @StringFatherBot on Telegram.",
+        "description": "A Pyrogram v2 String Session from @JapaneseXstringsession_bot on Telegram.",
         "value": "",
         "required": true
       },
