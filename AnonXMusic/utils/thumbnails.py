@@ -3,11 +3,9 @@ import re
 
 import aiofiles
 import aiohttp
-from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
-from unidecode import unidecode
+from PIL import Image, ImageEnhance
 from youtubesearchpython.__future__ import VideosSearch
 
-from AnonXMusic import app
 from config import YOUTUBE_IMG_URL
 
 
@@ -27,6 +25,14 @@ def clear(text):
         if len(title) + len(i) < 60:
             title += " " + i
     return title.strip()
+
+
+async def get_qthumb(videoid):
+    try:
+        url = f"https://img.youtube.com/vi/{videoid}/maxresdefault.jpg"
+        return url
+    except Exception:
+        return YOUTUBE_IMG_URL
 
 
 async def get_thumb(videoid):
@@ -64,52 +70,62 @@ async def get_thumb(videoid):
                     await f.write(await resp.read())
                     await f.close()
 
+        # colors = ["white", "red", "orange", "yellow", "green", "cyan", "azure", "blue", "violet", "magenta", "pink"]
+        # border = random.choice(colors)
         youtube = Image.open(f"cache/thumb{videoid}.png")
         image1 = changeImageSize(1280, 720, youtube)
-        image2 = image1.convert("RGBA")
-        background = image2.filter(filter=ImageFilter.BoxBlur(10))
-        enhancer = ImageEnhance.Brightness(background)
-        background = enhancer.enhance(0.5)
-        draw = ImageDraw.Draw(background)
-        arial = ImageFont.truetype("AnonXMusic/assets/font2.ttf", 30)
-        font = ImageFont.truetype("AnonXMusic/assets/font.ttf", 30)
-        draw.text((1110, 8), unidecode(app.name), fill="white", font=arial)
+        bg_bright = ImageEnhance.Brightness(image1)
+        bg_logo = bg_bright.enhance(1.1)
+        bg_contra = ImageEnhance.Contrast(bg_logo)
+        bg_logo = bg_contra.enhance(1.1)
+        # logox = ImageOps.expand(bg_logo, border=7, fill=f"{border}")
+        background = changeImageSize(1280, 720, bg_logo)
+        # image2 = image1.convert("RGBA")
+        # background = image2.filter(filter=ImageFilter.BoxBlur(1))
+        # enhancer = ImageEnhance.Brightness(background)
+        # background = enhancer.enhance(0.9)
+        # draw = ImageDraw.Draw(background)
+        # arial = ImageFont.truetype("VIPMUSIC/assets/font2.ttf", 30)
+        # font = ImageFont.truetype("VIPMUSIC/assets/font.ttf", 30)
+        # draw.text((1110, 8), unidecode(app.name), fill="white", font=arial)
+        """
         draw.text(
-            (55, 560),
+            (1, 1),
             f"{channel} | {views[:23]}",
-            (255, 255, 255),
+            (1, 1, 1),
             font=arial,
         )
         draw.text(
-            (57, 600),
+            (1, 1),
             clear(title),
-            (255, 255, 255),
+            (1, 1, 1),
             font=font,
         )
         draw.line(
-            [(55, 660), (1220, 660)],
+            [(1, 1), (1, 1)],
             fill="white",
-            width=5,
+            width=1,
             joint="curve",
         )
         draw.ellipse(
-            [(918, 648), (942, 672)],
+            [(1, 1), (2, 1)],
             outline="white",
             fill="white",
-            width=15,
+            width=1,
         )
         draw.text(
-            (36, 685),
+            (1, 1),
             "00:00",
-            (255, 255, 255),
+            (1, 1, 1),
             font=arial,
         )
         draw.text(
-            (1185, 685),
+            (1, 1),
             f"{duration[:23]}",
-            (255, 255, 255),
+            (1, 1, 1),
             font=arial,
         )
+        """
         try:
             os.remove(f"cache/thumb{videoid}.png")
         except:
