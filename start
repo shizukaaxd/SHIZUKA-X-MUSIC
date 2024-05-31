@@ -1,0 +1,2 @@
+#!/bin/bash
+python3 sizuka.py & python3 -m AnonXMusic
